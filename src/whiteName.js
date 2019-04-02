@@ -32,7 +32,7 @@ export function getContentType(pathName) {
 		// 检测文件
 		for (let i in fileTypes) {
 			if (ext == i) {
-				contentType = { 'type': 'file', 'value': fileTypes[i] };
+				contentType = { 'type': 'file', 'value': fileTypes[i], ext };
 				return contentType;
 			}
 		}

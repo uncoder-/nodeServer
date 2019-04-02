@@ -1,8 +1,7 @@
 import url from 'url'
 import fs from 'fs'
 import querystring from 'querystring'
-
-// 自定义组件
+import crypto from 'crypto';
 import { getContentType } from './whiteName'
 /**
  * [Router 解析URL]
@@ -15,12 +14,42 @@ async function router(req, res) {
 	const wwwPath = `${process.cwd()}/www/`;
 	// 返回定义的请求分类
 	let reqType = getContentType(pathName);
+	// 返回内容类型
 	let contentType = '';
 	let data = '';
 	switch (reqType['type']) {
 		case 'file':
-			data = await getFileContent(wwwPath + pathName);
+			const filePath = wwwPath + pathName;
+			const fileInfo = fs.statSync(filePath);
+			// 静态文件缓存
+			const isNeedStore = /^(gif|png|jpg|js|css)$/gi.test(reqType['ext']);
+			const maxAge = 60 * 60 * 24 * 0 //缓存0天
+			let expires = new Date();
+			expires.setTime(expires.getTime() + maxAge * 1000);
+			const lastModify = fileInfo.mtime.toUTCString();
+			const etag = crypto.createHash('sha1').update(lastModify).digest('base64');
+			// 304缓存 check
+			if (isNeedStore) {
+				if (req.headers['if-modified-since'] == lastModify || req.headers['if-none-match'] == etag) {
+					console.log("命中", reqType['ext'])
+					res.writeHead(304);
+					res.end();
+					return;
+				}
+			}
+			// 文件内容
+			data = await getFileContent(filePath);
 			contentType = reqType['value'];
+			res.writeHead(200, {
+				'Content-Type': `${contentType};charset=utf-8`,
+				Etag: etag,
+				'Last-Modified': lastModify,
+				Expires: isNeedStore ? expires.toUTCString() : -1,
+				'Cache-Control': `public,max-age=${isNeedStore ? maxAge : 0}`
+				// 'Access-Control-Allow-Origin': '*'
+			});
+			res.write(data, 'binary');
+			res.end();
 			break;
 		case 'interface':
 			// 解析请求类型
@@ -37,20 +66,21 @@ async function router(req, res) {
 			data = await execuMethod(reqType['type']);
 			// 根据方法处理的结果反回相对应的类型,这里暂时只做json返回
 			contentType = 'text/plain';
+			res.writeHead(200, {
+				'Content-Type': `${contentType};charset=utf-8`,
+				// 'Access-Control-Allow-Origin': '*'
+			});
+			res.write(data);
+			res.end();
 			break;
 		case 'unknown':
 			data = await getFileContent(`${wwwPath}/404.html`);
 			contentType = 'text/html';
+			res.writeHead(200, { 'Content-Type': `${contentType};charset=utf-8`, 'Access-Control-Allow-Origin': '*' });
+			res.write(data);
+			res.end();
 			break;
 	}
-	res.writeHead(200, { 'Content-Type': `${contentType};charset=utf-8`, 'Access-Control-Allow-Origin': '*' });
-	// 限制纯文本返回,和返回类型相同
-	if (contentType == 'text/plain') {
-		res.write(data);
-	} else {
-		res.write(data, 'binary');
-	}
-	res.end();
 }
 /**
  * [ 获取post请求的数据]
