@@ -5,26 +5,24 @@ import http from 'http';
 import router from './src/router';
 
 http.createServer(function (req, res) {
-	
 	// 过滤favicon.ico
 	if (req.url == "/favicon.ico") {
 		res.writeHead(204);
 		res.end();
 		return;
 	}
-
-	// 设置跨域
+	// 跨域配置
 	res.setHeader('Access-Control-Allow-Origin', '*');
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 	res.setHeader('Access-Control-Allow-Headers', 'token');
 	res.setHeader('Access-Control-Allow-Credentials', true);
+	// 浏览器预解析请求拦截
 	if (req.method == 'OPTIONS') {
 		res.writeHead(204, { 'Content-Length': 0 });
 		res.end();
 		return;
 	}
-
-	//路由
+	// 入口
 	router(req, res);
 }).listen('8888');
 

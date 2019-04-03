@@ -1,22 +1,18 @@
 import url from 'url'
 import fs from 'fs'
-import querystring from 'querystring'
 import crypto from 'crypto';
 import { getContentType } from './whiteName'
 /**
  * [Router 解析URL]
  */
 async function router(req, res) {
-	let Url = url.parse(req.url, true);
-	let pathName = Url.pathname;
+	const Url = url.parse(req.url, true);
+	const pathName = Url.pathname;
 
 	// 定义站点访问根目录
 	const wwwPath = `${process.cwd()}/www/`;
 	// 返回定义的请求分类
-	let reqType = getContentType(pathName);
-	// 返回内容类型
-	let contentType = '';
-	let data = '';
+	const reqType = getContentType(pathName);
 	switch (reqType['type']) {
 		case 'file':
 			const filePath = wwwPath + pathName;
@@ -24,31 +20,30 @@ async function router(req, res) {
 			// 静态文件缓存
 			const isNeedStore = /^(gif|png|jpg|js|css)$/gi.test(reqType['ext']);
 			const maxAge = 60 * 60 * 24 * 0 //缓存0天
-			let expires = new Date();
+			const expires = new Date();
 			expires.setTime(expires.getTime() + maxAge * 1000);
 			const lastModify = fileInfo.mtime.toUTCString();
 			const etag = crypto.createHash('sha1').update(lastModify).digest('base64');
 			// 304缓存 check
 			if (isNeedStore) {
 				if (req.headers['if-modified-since'] == lastModify || req.headers['if-none-match'] == etag) {
-					console.log("命中", reqType['ext'])
+					console.log("命中", reqType['ext']);
 					res.writeHead(304);
 					res.end();
 					return;
 				}
 			}
 			// 文件内容
-			data = await getFileContent(filePath);
-			contentType = reqType['value'];
+			const fileData = await getFileContent(filePath);
+			const contentType = reqType['value'];
 			res.writeHead(200, {
 				'Content-Type': `${contentType};charset=utf-8`,
 				Etag: etag,
 				'Last-Modified': lastModify,
 				Expires: isNeedStore ? expires.toUTCString() : -1,
 				'Cache-Control': `public,max-age=${isNeedStore ? maxAge : 0}`
-				// 'Access-Control-Allow-Origin': '*'
 			});
-			res.write(data, 'binary');
+			res.write(fileData, 'binary');
 			res.end();
 			break;
 		case 'interface':
@@ -63,21 +58,16 @@ async function router(req, res) {
 				queryData = await getPostData(req);
 			}
 			console.log('我是从客户端来的数据', queryData);
-			data = await execuMethod(reqType['type']);
+			const data = await execuMethod(reqType['type'], queryData);
 			// 根据方法处理的结果反回相对应的类型,这里暂时只做json返回
-			contentType = 'text/plain';
-			res.writeHead(200, {
-				'Content-Type': `${contentType};charset=utf-8`,
-				// 'Access-Control-Allow-Origin': '*'
-			});
+			res.writeHead(200, { 'Content-Type': 'text/plain;charset=utf-8' });
 			res.write(data);
 			res.end();
 			break;
 		case 'unknown':
-			data = await getFileContent(`${wwwPath}/404.html`);
-			contentType = 'text/html';
-			res.writeHead(200, { 'Content-Type': `${contentType};charset=utf-8`, 'Access-Control-Allow-Origin': '*' });
-			res.write(data);
+			const file404 = await getFileContent(`${wwwPath}/404.html`);
+			res.writeHead(200, { 'Content-Type': 'text/html;charset=utf-8' });
+			res.write(file404);
 			res.end();
 			break;
 	}
@@ -97,8 +87,8 @@ function getPostData(req) {
 			if (postData.length > 1e6) { req.connection.destroy(); }
 		});
 		req.on('end', function () {
-			let queryString = querystring.parse(postData);
-			resolve(queryString);
+			const queryData = JSON.parse(postData);
+			resolve(queryData);
 		});
 	});
 }
@@ -122,7 +112,7 @@ function getFileContent(filePath) {
 function execuMethod(methodName, prams) {
 	return new Promise(function (resolve, reject) {
 		setTimeout(function () {
-			let data = JSON.stringify({ 'status': 200, text: `${methodName}方法执行成功！` });
+			let data = JSON.stringify({ 'status': 200, msg: `${methodName}方法执行成功！`, data: prams });
 			resolve(data);
 		}, 2000);
 	});
