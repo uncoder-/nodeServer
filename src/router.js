@@ -25,13 +25,11 @@ async function router(req, res) {
 			const lastModify = fileInfo.mtime.toUTCString();
 			const etag = crypto.createHash('sha1').update(lastModify).digest('base64');
 			// 304缓存 check
-			if (isNeedStore) {
-				if (req.headers['if-modified-since'] == lastModify || req.headers['if-none-match'] == etag) {
-					console.log("命中", reqType['ext']);
-					res.writeHead(304);
-					res.end();
-					return;
-				}
+			if (isNeedStore && req.headers['if-modified-since'] == lastModify || req.headers['if-none-match'] == etag) {
+				console.log("命中", reqType['ext']);
+				res.writeHead(304);
+				res.end();
+				return;
 			}
 			// 文件内容
 			const fileData = await getFileContent(filePath);
@@ -48,7 +46,7 @@ async function router(req, res) {
 			break;
 		case 'interface':
 			// 解析请求类型
-			let requestMethod = req.method;
+			const requestMethod = req.method;
 			// 解析请求数据
 			let queryData = '';
 			if (requestMethod == 'GET') {

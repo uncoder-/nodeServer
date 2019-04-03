@@ -1,10 +1,17 @@
 # nodeServer
-基于node的简易web文件解析
-## 安装babel环境
+
+基于nodejs的http封装web文件解析demo
+
+## 安装
+```bash
+	npm install
+```
+
 ## 执行
 ``` 
-	babel-node sever.js
+	npm start
 ```
+
 ## 浏览器访问
 ```
 	localhost:8888
