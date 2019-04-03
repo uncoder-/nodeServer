@@ -23,10 +23,10 @@ async function router(req, res) {
 			const expires = new Date();
 			expires.setTime(expires.getTime() + maxAge * 1000);
 			const lastModify = fileInfo.mtime.toUTCString();
-			const etag = crypto.createHash('sha1').update(lastModify).digest('base64');
+			const etag = crypto.createHash('sha1').update(`${fileInfo.size}-${lastModify}`, 'utf8').digest('base64').substring(0, 27);
 			// 304缓存 check
 			if (isNeedStore && req.headers['if-modified-since'] == lastModify || req.headers['if-none-match'] == etag) {
-				console.log("命中", reqType['ext']);
+				console.log("304命中资源后缀", reqType['ext']);
 				res.writeHead(304);
 				res.end();
 				return;
