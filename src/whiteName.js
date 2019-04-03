@@ -1,10 +1,10 @@
 // 系统组件
 import path from 'path'
 
-let userInterface = [
+const userInterface = [
 	'login'
 ];
-let fileTypes = {
+const fileTypes = {
 	"css": "text/css",
 	"html": "text/html",
 	"ico": "image/x-icon",

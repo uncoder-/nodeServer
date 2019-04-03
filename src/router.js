@@ -47,6 +47,7 @@ async function router(req, res) {
 		case 'interface':
 			// 解析请求类型
 			const requestMethod = req.method;
+			console.log(req)
 			// 解析请求数据
 			let queryData = '';
 			if (requestMethod == 'GET') {
@@ -56,7 +57,7 @@ async function router(req, res) {
 				queryData = await getPostData(req);
 			}
 			console.log('我是从客户端来的数据', queryData);
-			const data = await execuMethod(reqType['type'], queryData);
+			const data = await execuMethod(reqType['value'], queryData);
 			// 根据方法处理的结果反回相对应的类型,这里暂时只做json返回
 			res.writeHead(200, { 'Content-Type': 'text/plain;charset=utf-8' });
 			res.write(data);
