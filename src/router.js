@@ -48,8 +48,8 @@ async function router(req, res) {
 			const queryData = await getQueryData(req);
 			console.log('我是从客户端请求的数据', queryData);
 			const data = await execuMethod(reqType['value'], queryData);
-			// 根据方法处理的结果反回相对应的类型,这里暂时只做json返回
 			res.writeHead(200, { 'Content-Type': 'text/plain;charset=utf-8' });
+			// 这里返回只做json字符串
 			res.write(data);
 			res.end();
 			break;
