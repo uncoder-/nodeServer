@@ -105,10 +105,10 @@ function getFileContent(filePath) {
 /**
  * [execMethod 处理方法]
  */
-function execuMethod(methodName, prams) {
+function execuMethod(methodName, parameter) {
 	return new Promise(function (resolve, reject) {
 		setTimeout(function () {
-			let data = JSON.stringify({ 'status': 200, msg: `${methodName}方法执行成功！`, data: prams });
+			let data = JSON.stringify({ status: 0, msg: `${methodName}方法执行成功！`, data: parameter });
 			resolve(data);
 		}, 2000);
 	});
