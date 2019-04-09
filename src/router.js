@@ -1,6 +1,7 @@
 import url from 'url';
 import fs from 'fs';
 import crypto from 'crypto';
+import zlib from 'zlib';
 import { getContentType } from './whiteName';
 /**
  * 入口
@@ -31,15 +32,18 @@ async function router(req, res) {
 				return;
 			}
 			// 文件内容
+			// const fileData = fs.createReadStream(filePath);
 			const fileData = await getFileContent(filePath);
 			const contentType = reqType['value'];
 			res.writeHead(200, {
 				'Content-Type': `${contentType};charset=utf-8`,
+				// 'Content-Encoding': 'gzip',
 				Etag: etag,
 				'Last-Modified': lastModify,
 				Expires: isNeedStore ? expires.toUTCString() : -1,
 				'Cache-Control': `public,max-age=${isNeedStore ? maxAge : 0}`
 			});
+			// fileData.pipe(zlib.createGzip()).pipe(res);
 			res.write(fileData, 'binary');
 			res.end();
 			break;
