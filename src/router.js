@@ -45,18 +45,9 @@ async function router(req, res) {
 			res.end();
 			break;
 		case 'interface':
-			// 解析请求类型
-			const requestMethod = req.method;
-			console.log(req)
 			// 解析请求数据
-			let queryData = '';
-			if (requestMethod == 'GET') {
-				queryData = Url.query;
-			} else if (requestMethod == 'POST') {
-				// 设置接收数据类型
-				queryData = await getPostData(req);
-			}
-			console.log('我是从客户端来的数据', queryData);
+			const queryData = await getQueryData(req);
+			console.log('我是从客户端请求的数据', queryData);
 			const data = await execuMethod(reqType['value'], queryData);
 			// 根据方法处理的结果反回相对应的类型,这里暂时只做json返回
 			res.writeHead(200, { 'Content-Type': 'text/plain;charset=utf-8' });
@@ -74,22 +65,28 @@ async function router(req, res) {
 /**
  * [ 获取post请求的数据]
  */
-function getPostData(req) {
-	return new Promise(function (resolve, reject) {
-		req.setEncoding("utf8");
-		// 设置临时存储
-		let postData = '';
-		req.on('data', function (data) {
-			postData += data;
-			// too much post data, kill the connection!
-			// 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-			if (postData.length > 1e6) { req.connection.destroy(); }
+function getQueryData(req) {
+	const requestMethod = req.method;
+	if (requestMethod == 'GET') {
+		return Url.query;
+	} else if (requestMethod == 'POST') {
+		// 设置接收数据类型
+		return new Promise(function (resolve, reject) {
+			req.setEncoding("utf8");
+			// 设置临时存储
+			let postData = '';
+			req.on('data', function (data) {
+				postData += data;
+				// too much post data, kill the connection!
+				// 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+				if (postData.length > 1e6) { req.connection.destroy(); }
+			});
+			req.on('end', function () {
+				const queryData = JSON.parse(postData);
+				resolve(queryData);
+			});
 		});
-		req.on('end', function () {
-			const queryData = JSON.parse(postData);
-			resolve(queryData);
-		});
-	});
+	}
 }
 /**
  * [fs 读取文件]
