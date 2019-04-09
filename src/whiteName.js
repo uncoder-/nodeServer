@@ -1,9 +1,6 @@
-// 系统组件
-import path from 'path'
+import path from 'path';
 
-const userInterface = [
-	'login'
-];
+const userInterface = ['login'];
 const fileTypes = {
 	"css": "text/css",
 	"html": "text/html",
@@ -21,7 +18,7 @@ const fileTypes = {
 };
 
 /**
- * [getContentType 遍历白名单]
+ *  遍历白名单
  */
 export function getContentType(pathName) {
 	let contentType = { type: 'unknown', value: '' };
@@ -30,16 +27,16 @@ export function getContentType(pathName) {
 	ext = ext ? ext.slice(1) : '';
 	if (ext != '') {
 		// 检测文件
-		for (let i in fileTypes) {
+		for (const i in fileTypes) {
 			if (ext == i) {
-				contentType = { 'type': 'file', 'value': fileTypes[i], ext };
+				contentType = { type: 'file', value: fileTypes[i], ext };
 				return contentType;
 			}
 		}
 	} else {
 		// 检测接口
-		for (let i of userInterface) {
-			if (pathName == ('/' + i)) {
+		for (const i of userInterface) {
+			if (pathName == (`/${i}`)) {
 				contentType = { type: 'interface', value: i };
 				return contentType;
 			}

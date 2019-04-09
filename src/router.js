@@ -1,14 +1,13 @@
-import url from 'url'
-import fs from 'fs'
+import url from 'url';
+import fs from 'fs';
 import crypto from 'crypto';
-import { getContentType } from './whiteName'
+import { getContentType } from './whiteName';
 /**
- * [Router 解析URL]
+ * 入口
  */
 async function router(req, res) {
 	const Url = url.parse(req.url, true);
 	const pathName = Url.pathname;
-
 	// 定义站点访问根目录
 	const wwwPath = `${process.cwd()}/www/`;
 	// 返回定义的请求分类
@@ -63,7 +62,7 @@ async function router(req, res) {
 	}
 }
 /**
- * [ 获取post请求的数据]
+ * 获取请求参数
  */
 function getQueryData(req) {
 	const requestMethod = req.method;
@@ -89,7 +88,7 @@ function getQueryData(req) {
 	}
 }
 /**
- * [fs 读取文件]
+ * 读取文件
  */
 function getFileContent(filePath) {
 	return new Promise(function (resolve, reject) {
@@ -103,7 +102,7 @@ function getFileContent(filePath) {
 	});
 }
 /**
- * [execMethod 处理方法]
+ * 处理请求
  */
 function execuMethod(methodName, parameter) {
 	return new Promise(function (resolve, reject) {
@@ -113,4 +112,4 @@ function execuMethod(methodName, parameter) {
 		}, 2000);
 	});
 }
-export default router
+export default router;
