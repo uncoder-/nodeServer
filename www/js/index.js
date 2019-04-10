@@ -12,8 +12,9 @@
 
 		var xhr = new XMLHttpRequest();
 		// xhr.open('POST', '/login', true);
-		xhr.open('POST', 'http://192.168.168.119:8888/login', true);
+		xhr.open('POST', 'http://192.168.0.71:8888/login', true);
 		xhr.setRequestHeader('token', 'abcdefghijklmnopqrstuvwxyz');
+		xhr.withCredentials = true;
 		xhr.send(JSON.stringify(reqData));
 		xhr.onreadystatechange = () => {
 			if (xhr.readyState == 4 && xhr.status == 200) {
