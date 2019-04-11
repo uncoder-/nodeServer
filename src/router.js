@@ -60,7 +60,7 @@ async function router(req, res) {
 		case 'unknown':
 			const file404 = await getFileContent(`${wwwPath}/404.html`);
 			res.writeHead(200, { 'Content-Type': 'text/html;charset=utf-8' });
-			res.write(file404);
+			res.write(file404, 'binary');
 			res.end();
 			break;
 	}
